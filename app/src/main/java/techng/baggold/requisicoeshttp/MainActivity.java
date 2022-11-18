@@ -23,8 +23,8 @@ import java.net.URL;
 public class MainActivity extends AppCompatActivity {
 
     private Button buttonRecuperar;
-    private TextView text_cep, text_logradouro, text_bairro, text_localidade, text_uf, text_ddd;
-    private EditText edit_cep;
+    private TextView text_cep, text_logradouro, text_bairro, text_localidade, text_uf, text_ddd, text_moeda, text_simbolo;
+    private EditText edit_cep, edit_moeda;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,15 +38,17 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 String meuCep = edit_cep.getText().toString();
+                //String minhaMoeda = edit_moeda.getText().toString();
 
                 MyTask task = new MyTask();
 
-                String moeda = "USD";
-                String urlApi = "https://blockchain.info/tobtc?currency="+moeda+"&value=500";
+                //String moeda = minhaMoeda;
+                //String urlApi = "https://blockchain.info/tobtc?currency="+moeda+"&value=500";
+                String urlApi = "https://blockchain.info/ticker";
 
                 String cep = meuCep;
                 String urlCep = "https://viacep.com.br/ws/" + cep + "/json/";
-                task.execute(urlCep);
+                task.execute(urlApi);
 
             }
         });
@@ -101,33 +103,48 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(String resultado) {
             super.onPostExecute(resultado);
 
+            /*
             String cep = null;
             String logradouro = null;
             String bairro = null;
             String localidade = null;
             String uf = null;
-            String ddd = null;
+            String ddd = null;  */
+            String objetoValor = null;
+            String valorMoeda = null;
+            String simbolo = null;
 
             try {
+                /*
                 JSONObject jsonObject = new JSONObject( resultado );
-
                 cep = jsonObject.getString("cep");
                 logradouro = jsonObject.getString("logradouro");
                 bairro = jsonObject.getString("bairro");
                 localidade = jsonObject.getString("localidade");
                 uf = jsonObject.getString("uf");
-                ddd = jsonObject.getString("ddd");
+                ddd = jsonObject.getString("ddd");  */
+
+                String minhaMoeda = edit_moeda.getText().toString();
+
+                JSONObject jsonObject = new JSONObject( resultado );
+                objetoValor = jsonObject.getString(minhaMoeda);
+
+                JSONObject jsonObjectReal = new JSONObject( objetoValor );
+                valorMoeda = jsonObjectReal.getString("last");
+                simbolo = jsonObjectReal.getString("symbol");
 
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
+            /*
             text_cep.setText( "CEP: " + cep );
             text_logradouro.setText( "Rua: " + logradouro );
             text_bairro.setText( "Bairro: " + bairro );
             text_localidade.setText("Cidade: " + localidade );
             text_uf.setText( "Estado: " + uf );
-            text_ddd.setText("DDD: " + ddd );
+            text_ddd.setText("DDD: " + ddd );  */
+            text_moeda.setText( simbolo+" "+valorMoeda );
         }
     }
 
@@ -142,6 +159,10 @@ public class MainActivity extends AppCompatActivity {
         text_localidade = findViewById(R.id.text_localidade);
         text_uf = findViewById(R.id.text_uf);
         text_ddd = findViewById(R.id.text_ddd);
+        text_moeda = findViewById(R.id.text_moeda);
         edit_cep = findViewById(R.id.edit_cep);
+        edit_moeda = findViewById(R.id.edit_moeda);
+        text_simbolo = findViewById(R.id.text_simbolo);
+
     }
 }
