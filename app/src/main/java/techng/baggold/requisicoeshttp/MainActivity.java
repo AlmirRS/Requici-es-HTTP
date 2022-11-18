@@ -20,11 +20,20 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import techng.baggold.requisicoeshttp.api.CEPService;
+import techng.baggold.requisicoeshttp.model.CEP;
+
 public class MainActivity extends AppCompatActivity {
 
     private Button buttonRecuperar;
-    private TextView text_cep, text_logradouro, text_bairro, text_localidade, text_uf, text_ddd, text_moeda, text_simbolo;
+    private TextView text_cep, text_logradouro, text_bairro, text_localidade, text_uf, text_moeda, text_simbolo;
     private EditText edit_cep, edit_moeda;
+    private Retrofit retrofit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,10 +42,18 @@ public class MainActivity extends AppCompatActivity {
 
         iniciarComponentes();
 
+        retrofit = new Retrofit.Builder()
+                .baseUrl("https://viacep.com.br/ws/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
         buttonRecuperar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+                recuperarCEPRetrofit();
+
+                /*
                 String meuCep = edit_cep.getText().toString();
                 //String minhaMoeda = edit_moeda.getText().toString();
 
@@ -49,10 +66,42 @@ public class MainActivity extends AppCompatActivity {
                 String cep = meuCep;
                 String urlCep = "https://viacep.com.br/ws/" + cep + "/json/";
                 task.execute(urlApi);
+                */
 
             }
         });
     }
+
+    private void recuperarCEPRetrofit() {
+
+        CEPService cepService = retrofit.create(CEPService.class);
+        Call<CEP> call = cepService.recuperarCCEP();
+
+        call.enqueue(new Callback<CEP>() {
+            @Override
+            public void onResponse(Call<CEP> call, Response<CEP> response) {
+
+                if( response.isSuccessful() ) {
+
+                    CEP cep = response.body();
+                    text_cep.setText( cep.getCep() );
+                    text_logradouro.setText( cep.getLogradouro() );
+                    text_bairro.setText( cep.getBairro() );
+                    text_localidade.setText( cep.getLocalidade() );
+                    text_uf.setText( cep.getUf() );
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<CEP> call, Throwable t) {
+
+            }
+        });
+
+    }
+
+
 
     class MyTask extends AsyncTask<String, Void, String> {
 
@@ -158,7 +207,6 @@ public class MainActivity extends AppCompatActivity {
         text_bairro = findViewById(R.id.text_bairro);
         text_localidade = findViewById(R.id.text_localidade);
         text_uf = findViewById(R.id.text_uf);
-        text_ddd = findViewById(R.id.text_ddd);
         text_moeda = findViewById(R.id.text_moeda);
         edit_cep = findViewById(R.id.edit_cep);
         edit_moeda = findViewById(R.id.edit_moeda);
